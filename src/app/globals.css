@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 :root {
   --background: #f8fafc; /* Subtle gray background for 3D card effect */
   --foreground: #1a1a1a;
@@ -5,7 +7,7 @@
   --primary-hover: #9c0c24;
   --accent: #2c3e50;
   --border-color: #e2e8f0;
-  --text-muted: #64748b;
+  --text-muted: #475569; /* Oscurecido para mejor contraste (antes #64748b) */
   --card-bg: #ffffff;
   --font-serif: var(--font-serif), Georgia, 'Times New Roman', Times, serif;
   --font-sans: var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -213,6 +215,16 @@ a:hover {
   text-transform: uppercase;
   letter-spacing: -0.02em;
   margin-bottom: 0.5rem;
+}
+
+.site-title-loop {
+  font-family: var(--font-serif);
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--primary); /* Logo en rojo clásico */
+  text-transform: uppercase;
+  letter-spacing: -0.05em;
+  line-height: 1;
 }
 
 .site-subtitle {
@@ -436,15 +448,7 @@ a:hover {
 }
 
 .hero-slide-source {
-  background-color: var(--primary);
-  color: #fff;
-  padding: 0.3rem 0.8rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  margin-bottom: 1rem;
-  display: inline-block;
+  display: none;
 }
 
 .hero-slide-title {
@@ -519,10 +523,10 @@ a:hover {
 /* Base Card Styling (Modern touch) */
 .article-card {
   background: var(--card-bg);
-  border-radius: 8px;
+  border-radius: 12px; /* Más redondeado y moderno */
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s;
-  border: 1px solid var(--border-color);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(0,0,0,0.05); /* Borde súper sutil */
   animation: fadeUp 0.5s ease-out forwards;
 }
 
@@ -672,10 +676,7 @@ a:hover {
   box-shadow: 0 12px 30px rgba(0,0,0,0.08);
 }
 
-.grid-article {
-  display: flex;
-  flex-direction: column;
-}
+/* Removido el override que rompía el masonry (display: flex) */
 
 .grid-image {
   width: 100%;
@@ -694,13 +695,7 @@ a:hover {
 
 /* Shared Components */
 .news-source {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--primary);
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  display: inline-block;
+  display: none;
 }
 
 .news-snippet {
@@ -880,3 +875,6 @@ a:hover {
     padding-bottom: 6rem; /* Deja espacio para no pisar el texto con la barra fija */
   }
 }
+
+.bg-diagonal { background-image: repeating-linear-gradient(45deg, #f4f4f4 0, #f4f4f4 2px, white 2px, white 6px); }
+

@@ -18,7 +18,7 @@ export default function Footer() {
         
         {/* Institucional */}
         <div className="footer-section">
-          <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', fontFamily: 'var(--font-serif)' }}>Espectador Misiones</h3>
+          <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', fontFamily: 'var(--font-serif)' }}>MisionesYa</h3>
           <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: '1.6' }}>
             Tu portal de noticias con la mejor información de Misiones y la región. Mantente informado al instante con las últimas novedades, cotizaciones y más.
           </p>
@@ -63,7 +63,7 @@ export default function Footer() {
         color: '#64748b',
         fontSize: '0.85rem'
       }}>
-        <p>&copy; {new Date().getFullYear()} Espectador Misiones. Todos los derechos reservados.</p>
+        <p>&copy; {new Date().getFullYear()} MisionesYa. Todos los derechos reservados.</p>
       </div>
     </footer>
   );

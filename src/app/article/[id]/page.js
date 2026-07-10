@@ -1,7 +1,9 @@
-import { fetchAllNews, scrapeFullArticle, updateArticleInCache } from '@/lib/fetchNews';
+import { fetchAllNews } from '@/lib/fetchNews';
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import ReadingProgress from '@/components/ReadingProgress';
+import ArticleContent from '@/components/ArticleContent';
 
 export const revalidate = 900;
 
@@ -20,13 +22,13 @@ export async function generateMetadata({ params }) {
   if (!article) return { title: 'Noticia no encontrada' };
 
   return {
-    title: `${article.title} | Espectador Misiones`,
+    title: `${article.title} | MisionesYa`,
     description: article.contentSnippet,
     openGraph: {
       title: article.title,
       description: article.contentSnippet,
       url: `https://espectadormisiones.com/article/${article.id}`,
-      siteName: 'Espectador Misiones',
+      siteName: 'MisionesYa',
       images: [
         {
           url: article.image || 'https://espectadormisiones.com/default-share.jpg',
@@ -49,30 +51,14 @@ export default async function ArticlePage({ params }) {
     notFound();
   }
 
-  // LAZY SCRAPING: Si la noticia nunca fue extraída o está muy corta, la robamos AHORA
-  if (!article.scraped && article.fullContent.length < 1500) {
-    const scrapedText = await scrapeFullArticle(article.link);
-    if (scrapedText && scrapedText.length > article.fullContent.length) {
-      article.fullContent = scrapedText;
-      
-      let newImage = null;
-      if (!article.image) {
-        const imgMatch = scrapedText.match(/<img[^>]+src=["']([^"']+)["']/i);
-        if (imgMatch && imgMatch[1]) newImage = imgMatch[1];
-        if (newImage) article.image = newImage;
-      }
-      
-      // Guardar en el servidor (caché local) de forma asíncrona pero sin bloquear al lector
-      updateArticleInCache(article.id, scrapedText, newImage);
-    }
-  }
+  // El scraping pesado ahora se delega al cliente mediante ArticleContent y /api/scrape
 
   return (
     <>
       <ReadingProgress />
       <main className="article-page">
         <header className="header">
-          <h1 className="site-title">Espectador Misiones</h1>
+          <h1 className="site-title">MisionesYa</h1>
         </header>
 
         <div className="container article-container">
@@ -89,13 +75,12 @@ export default async function ArticlePage({ params }) {
             </div>
           
           {article.image && (
-            <img src={article.image} alt={article.title} className="article-main-image" />
+            <div className="relative w-full aspect-[16/9] mb-8 overflow-hidden rounded-lg">
+              <Image src={article.image} alt={article.title} fill className="object-cover" />
+            </div>
           )}
 
-          <div 
-            className="article-content"
-            dangerouslySetInnerHTML={{ __html: article.fullContent }}
-          />
+          <ArticleContent initialArticle={article} />
 
           {/* Compartir Redes Sociales (Minimalista Moderno) */}
           <div className="share-container">
@@ -140,8 +125,8 @@ export default async function ArticlePage({ params }) {
             {news.filter(n => n.id !== article.id).slice(0, 4).map((item, idx) => (
               <article key={idx} className="grid-article article-card" style={{ backgroundColor: 'var(--card-bg)' }}>
                 {item.image && (
-                  <Link href={`/article/${item.id}`}>
-                    <img src={item.image} alt={item.title} className="grid-image" loading="lazy" />
+                  <Link href={`/article/${item.id}`} className="relative block w-full h-[150px] overflow-hidden rounded-t-lg">
+                    <Image src={item.image} alt={item.title} fill className="object-cover transition-transform duration-300 hover:scale-105" />
                   </Link>
                 )}
                 <div className="secondary-content">

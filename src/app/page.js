@@ -1,19 +1,15 @@
-import { fetchAllNews } from '@/lib/fetchNews';
+import { getPublishedArticles } from '@/app/actions/articles';
 import Link from 'next/link';
 import NewsGrid from '@/components/NewsGrid';
 import AdBanner from '@/components/AdBanner';
-import HeroCarousel from '@/components/HeroCarousel';
+import TNHeroGrid from '@/components/TNHeroGrid';
 import NewsTicker from '@/components/NewsTicker';
+import { Menu, Search } from 'lucide-react';
 
 export const revalidate = 900; 
 
-function stripHtml(html) {
-  if (!html) return '';
-  return html.replace(/<[^>]*>?/gm, '');
-}
-
 export default async function Home() {
-  const news = await fetchAllNews();
+  const news = await getPublishedArticles();
 
   if (news.length === 0) {
     return (
@@ -25,43 +21,53 @@ export default async function Home() {
     );
   }
 
-  const carouselNews = news.slice(0, 4);
-  const gridNews = news.slice(4);
+  // Optimización de Payload: getPublishedArticles ya devuelve un payload optimizado
+  const lightNews = news;
+
+  // Filtrar para dar más protagonismo a otras fuentes que no sean Misiones Online en el Top 4
+  const premiumNews = lightNews.filter(n => n.source.toLowerCase() !== 'misiones online');
+  const misionesOnline = lightNews.filter(n => n.source.toLowerCase() === 'misiones online');
+
+  // El Hero Grid usa las primeras 4 noticias premium. Si no hay suficientes, rellena con las de Misiones Online.
+  const carouselNews = [...premiumNews, ...misionesOnline].slice(0, 4);
+  
+  // Las demás noticias van al grid inferior respetando el orden cronológico original
+  const carouselIds = new Set(carouselNews.map(n => n.id));
+  const gridNews = lightNews.filter(n => !carouselIds.has(n.id));
 
   return (
-    <main>
-      <header className="header">
-        <h1 className="site-title">Espectador Misiones</h1>
-        <div className="site-subtitle">
-          <span>{new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
-          <span>Actualizado al Instante</span>
-        </div>
-      </header>
-
+    <main className="bg-white">
       {/* Ticker Dinámico Última Hora */}
-      <NewsTicker news={news.slice(0, 10)} />
+      <NewsTicker news={lightNews.slice(0, 10)} />
 
-      <div className="container">
+      <div className="w-full max-w-[1600px] mx-auto px-2 sm:px-4 mt-4">
+        {/* Carrusel Dinámico (Hero 4 columnas Full-Width) */}
+        <TNHeroGrid articles={carouselNews} />
+      </div>
+
+      <div className="container pt-4">
         
         <div className="newspaper-layout">
           
-          {/* Carrusel Dinámico (Hero) */}
-          <div className="hero-section">
-            <HeroCarousel articles={carouselNews} />
+          {/* Columna Principal (Izquierda) */}
+          <div className="main-content">
+            <h2 className="section-title !mt-0">Últimas Noticias</h2>
+            <NewsGrid news={gridNews} />
           </div>
 
-          {/* Destacados Secundarios (Sidebar) */}
+          {/* Destacados Secundarios (Sidebar Derecha) */}
           <aside className="secondary-sidebar">
             <AdBanner type="sidebar" />
 
-            {/* Lo más leído (Simulado) */}
-            <div className="most-read-section" style={{ marginTop: '2rem', padding: '1rem', backgroundColor: '#fff', border: '1px solid var(--border-color)', borderRadius: '4px' }}>
-              <h3 style={{ borderBottom: '2px solid var(--primary)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>Lo más leído</h3>
-              <ol style={{ paddingLeft: '1.5rem', margin: 0 }}>
-                {news.slice(5, 10).map((item, idx) => (
-                  <li key={idx} style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid #f1f5f9' }}>
-                    <Link href={`/article/${item.id}`}>
-                      <h4 style={{ fontSize: '0.95rem', margin: 0, fontWeight: '600' }}>{item.title}</h4>
+            {/* Lo más leído */}
+            <div className="bg-white border border-gray-100 shadow-sm p-6 mt-8 rounded-lg">
+              <h3 className="border-b-[3px] border-[#000518] pb-2 mb-5 font-black uppercase text-gray-900 tracking-tight text-xl">Lo más leído</h3>
+              <ol className="flex flex-col gap-5">
+                {lightNews.slice(5, 10).map((item, idx) => (
+                  <li key={item.id} className="flex gap-4 items-start border-b border-gray-100 pb-5 last:border-0 last:pb-0 group">
+                    <span className="text-4xl font-black text-[#E5232A] leading-none mt-1">{idx + 1}.</span>
+                    <Link href={`/article/${item.id}`} className="flex-1">
+                      <h4 className="text-gray-900 text-[15px] font-bold group-hover:text-[#E5232A] transition-colors leading-snug">{item.title}</h4>
                     </Link>
                   </li>
                 ))}
@@ -72,11 +78,6 @@ export default async function Home() {
         </div>
 
         <AdBanner type="horizontal" />
-
-        {/* Último Momento (Grilla general paginada) */}
-        <h2 className="section-title">Últimas Noticias</h2>
-        
-        <NewsGrid news={gridNews} />
 
       </div>
     </main>

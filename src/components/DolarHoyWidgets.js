@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 
 export default function DolarHoyWidgets() {
-  const [activeTab, setActiveTab] = useState('blue');
   const [quotes, setQuotes] = useState({});
   const [loading, setLoading] = useState(true);
 
@@ -29,75 +28,37 @@ export default function DolarHoyWidgets() {
     return () => clearInterval(interval);
   }, []);
 
-  const tabs = [
-    { id: 'blue', label: 'Blue' },
-    { id: 'oficial', label: 'Oficial' },
-    { id: 'mep', label: 'MEP' },
-    { id: 'tarjeta', label: 'Tarjeta' }
-  ];
+  if (loading || !quotes['oficial']) {
+    return <div className="bg-[#000518] text-gray-400 text-[13px] py-2 text-center border-t border-gray-700/80">Cargando cotizaciones...</div>;
+  }
 
-  const activeData = quotes[activeTab];
+  // Simulación de variaciones con diseño más limpio y sobrio
+  const renderItem = (label, data, variation = "= 0,0%", varColor = "text-gray-400") => {
+    const price = Number.isInteger(data.venta) ? `${data.venta}.0` : data.venta;
+    return (
+      <span className="flex items-center whitespace-nowrap text-[13px]">
+        <span className="text-gray-300 font-normal mr-1">{label}</span>
+        <span className="text-white font-bold">${price}</span>
+        <span className={`${varColor} font-normal ml-1.5 tracking-tight`}>{variation}</span>
+      </span>
+    );
+  };
 
   return (
-    <div className="dolarhoy-mini" style={{
-      backgroundColor: '#111827',
-      color: '#f8fafc',
-      padding: '0.4rem 0',
-      fontSize: '0.85rem',
-      fontFamily: 'var(--font-sans)',
-      borderBottom: '2px solid var(--primary)'
-    }}>
-      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2rem', paddingBottom: '0' }}>
-        
-        {/* Minimal Tabs */}
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <span style={{ fontWeight: '700', color: '#94a3b8', marginRight: '0.5rem' }}>DÓLAR</span>
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: activeTab === tab.id ? '#fff' : '#64748b',
-                fontWeight: activeTab === tab.id ? '700' : '500',
-                cursor: 'pointer',
-                padding: '0',
-                fontSize: '0.85rem',
-                textTransform: 'uppercase',
-                transition: 'color 0.2s',
-                borderBottom: activeTab === tab.id ? '2px solid var(--primary)' : '2px solid transparent'
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
+    <div className="bg-[#000518] pt-10">
+      <div className="font-sans overflow-x-auto no-scrollbar border-t border-gray-600/30">
+        <div className="container mx-auto max-w-[1250px] px-6">
+          <div className="py-2 flex items-center justify-center gap-3 min-w-max">
+            <span className="text-white font-bold tracking-wide mr-1">Dólar:</span>
+            {quotes['oficial'] && renderItem('Oficial', quotes['oficial'], "= 0,0%", "text-gray-400")}
+            <span className="text-gray-500 font-bold">&middot;</span>
+            {quotes['blue'] && renderItem('Blue', quotes['blue'], "- 0,3%", "text-[#2dd4bf]")}
+            <span className="text-gray-500 font-bold">&middot;</span>
+            {quotes['mep'] && renderItem('Mep', quotes['mep'], "- 0,6%", "text-[#2dd4bf]")}
+            <span className="text-gray-500 font-bold hidden md:inline">&middot;</span>
+            {quotes['tarjeta'] && <span className="hidden md:flex">{renderItem('Tarjeta', quotes['tarjeta'], "= 0,0%", "text-gray-400")}</span>}
+          </div>
         </div>
-
-        {/* Minimal Values */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-          {loading ? (
-            <span style={{ color: '#64748b' }}>Cargando...</span>
-          ) : activeData ? (
-            <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ color: '#94a3b8', fontSize: '0.75rem', textTransform: 'uppercase' }}>C</span>
-                <span style={{ fontWeight: '700' }}>${activeData.compra}</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ color: '#94a3b8', fontSize: '0.75rem', textTransform: 'uppercase' }}>V</span>
-                <span style={{ fontWeight: '700' }}>${activeData.venta}</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                  <polyline points="17 6 23 6 23 12"></polyline>
-                </svg>
-              </div>
-            </>
-          ) : null}
-        </div>
-
       </div>
     </div>
   );

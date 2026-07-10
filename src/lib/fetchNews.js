@@ -1,4 +1,6 @@
 import Parser from 'rss-parser';
+import * as cheerio from 'cheerio';
+import { supabase } from './supabaseClient';
 
 const parser = new Parser({
   customFields: {
@@ -17,216 +19,187 @@ const FEED_URLS = [
   { name: 'Primera Edición', url: 'https://www.primeraedicion.com.ar/feed/' }
 ];
 
-function calculateSimilarity(str1, str2) {
-  const stopWords = ['el', 'la', 'los', 'las', 'un', 'una', 'y', 'o', 'de', 'del', 'que', 'en', 'a', 'con', 'por', 'para', 'se', 'su', 'al', 'lo', 'como', 'más', 'pero', 'sus'];
-  
-  const getWords = (str) => {
-    return str.toLowerCase()
-              .replace(/[.,:;?!()""''\-]/g, ' ')
-              .split(/\s+/)
-              .filter(w => w.length > 2 && !stopWords.includes(w));
-  };
-
-  const set1 = new Set(getWords(str1));
-  const set2 = new Set(getWords(str2));
-
-  if (set1.size === 0 && set2.size === 0) return 1;
-  if (set1.size === 0 || set2.size === 0) return 0;
-
-  let intersection = 0;
-  for (const w of set1) {
-    if (set2.has(w)) intersection++;
+export async function fetchAllNews(forceSync = false) {
+  // Sincronizar RSS si se solicita (por ejemplo, desde el dashboard)
+  if (forceSync) {
+    await syncRssFeeds();
+  } else {
+    // Para evitar saturar las llamadas a la API en desarrollo o Vercel sin forceSync, 
+    // lo hacemos asíncronamente o confiamos en CRON / botón manual.
+    // syncRssFeeds() puede correr de fondo.
+    syncRssFeeds().catch(console.error);
   }
 
-  const union = set1.size + set2.size - intersection;
-  return intersection / union;
+  // Obtener noticias desde Supabase
+  const { data: articles, error } = await supabase
+    .from('articles')
+    .select('*')
+    .order('published_at', { ascending: false })
+    .limit(500);
+
+  if (error || !articles) {
+    console.error('Error al obtener noticias de Supabase:', error);
+    return [];
+  }
+
+  // Adaptar el formato de DB al que espera el frontend
+  return articles
+    .filter(n => !n.is_hidden && n.status !== 'draft')
+    .map(item => ({
+      id: item.id || Buffer.from(item.source_url).toString('base64').replace(/[^a-zA-Z0-9]/g, ''),
+      source: item.source,
+      title: item.edited_title || item.title,
+      link: item.source_url,
+      pubDate: item.published_at,
+      contentSnippet: item.edited_content 
+        ? stripHtml(item.edited_content).substring(0, 150) + '...'
+        : item.content_snippet || stripHtml(item.title).substring(0, 150),
+      fullContent: item.edited_content || item.content,
+      image: item.image,
+      categories: item.categories || [],
+      scraped: item.scraped,
+      status: item.status,
+      seoDescription: item.meta_description
+    }));
 }
 
-import fs from 'fs/promises';
-import path from 'path';
-import * as cheerio from 'cheerio';
-
-export async function scrapeFullArticle(url) {
-  try {
-    // Usamos AllOrigins Proxy para evadir el bloqueo 403 de Cloudflare
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-    const res = await fetch(proxyUrl);
-    
-    if (!res.ok) {
-      console.log(`Proxy Error (${res.status}) para: ${url}`);
-      return null;
+// Helper para reparar XML roto de RSS (Ej: El Territorio)
+async function fetchAndFixRSS(url) {
+  const res = await fetch(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
     }
-    
-    const data = await res.json();
-    if (!data.contents) return null;
-    
-    const html = data.contents;
-    const $ = cheerio.load(html);
-    
-    // Limpiar basura publicitaria y scripts
-    $('script, style, noscript, iframe, .ad, .social-share, .related-posts, nav, header, footer').remove();
-
-    // Selectores comunes de los diarios
-    let contentHtml = '';
-    const selectors = [
-      '.entry-content',
-      '.post-content',
-      'article .content',
-      '.article-body',
-      '.noticia-cuerpo',
-      '#main-content'
-    ];
-
-    for (const selector of selectors) {
-      const el = $(selector);
-      if (el.length > 0) {
-        contentHtml = el.html();
-        break;
-      }
-    }
-
-    if (!contentHtml) {
-      const paragraphs = $('article p');
-      if (paragraphs.length > 0) {
-        paragraphs.each((i, el) => {
-          contentHtml += `<p>${$(el).html()}</p>`;
-        });
-      }
-    }
-
-    return contentHtml ? contentHtml.trim() : null;
-  } catch (err) {
-    console.log('No se pudo scrapear: ', url);
-    return null;
-  }
+  });
+  if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+  let text = await res.text();
+  // El Territorio a veces tiene un "=" suelto en urls dentro de atributos mal formados o & no escapados.
+  // rss-parser usa xml2js que es estricto. Reemplazamos los unescaped ampersands que rompen todo.
+  text = text.replace(/&(?!amp;|lt;|gt;|quot;|apos;)/g, '&amp;');
+  return text;
 }
 
-// ... (keep calculateSimilarity and parser imports below)
-
-export async function fetchAllNews() {
-  const dataDir = path.join(process.cwd(), 'data');
-  const filePath = path.join(dataDir, 'news.json');
-  
-  let allArticles = [];
-
-  // 1. Intentar cargar el historial local
-  try {
-    const fileData = await fs.readFile(filePath, 'utf-8');
-    allArticles = JSON.parse(fileData);
-    console.log(`Cargadas ${allArticles.length} noticias desde la base de datos local.`);
-  } catch (err) {
-    console.log('No se encontró base de datos local, se creará una nueva.');
-  }
-
-  // 2. Traer nuevas noticias
-  let newArticlesFetched = 0;
+export async function syncRssFeeds() {
   for (const site of FEED_URLS) {
     try {
-      const feed = await parser.parseURL(site.url);
+      const xmlString = await fetchAndFixRSS(site.url);
+      const feed = await parser.parseString(xmlString);
       
       for (const item of feed.items) {
         let imageUrl = item.enclosure ? item.enclosure.url : null;
-        
         if (!imageUrl && item.mediaContent && item.mediaContent.$ && item.mediaContent.$.url) {
           imageUrl = item.mediaContent.$.url;
         }
 
         let fullContent = item['content:encoded'] || item.content || item.description || '';
-        
         if (!imageUrl) {
           const imgMatch = fullContent.match(/<img[^>]+src=["']([^"']+)["']/i);
-          if (imgMatch && imgMatch[1]) {
-            imageUrl = imgMatch[1];
-          }
+          if (imgMatch && imgMatch[1]) imageUrl = imgMatch[1];
         }
 
-        const id = Buffer.from(item.link || item.guid || Math.random().toString()).toString('base64').replace(/[^a-zA-Z0-9]/g, '');
+        const snippet = item.contentSnippet || stripHtml(fullContent).substring(0, 200) + '...';
 
-        let isDuplicate = false;
-        for (const existing of allArticles) {
-          if (existing.link === item.link || existing.id === id) {
-             isDuplicate = true;
-             break;
-          }
-          const sim = calculateSimilarity(item.title, existing.title);
-          if (sim >= 0.60) {
-            isDuplicate = true;
-            break;
-          }
-        }
-
-        if (isDuplicate) continue;
-
-        allArticles.push({
-          id,
-          source: site.name,
-          title: item.title,
-          link: item.link,
-          pubDate: item.pubDate,
-          contentSnippet: item.contentSnippet || stripHtml(fullContent).substring(0, 200) + '...',
-          fullContent: fullContent,
-          image: imageUrl,
-          categories: item.categories || [],
-          scraped: false // Bandera para saber si ya extrajimos el texto completo
-        });
-        newArticlesFetched++;
+        const { error } = await supabase
+          .from('articles')
+          .upsert({
+            title: item.title,
+            content: fullContent,
+            content_snippet: snippet,
+            source_url: item.link,
+            source: site.name,
+            image: imageUrl,
+            published_at: new Date(item.pubDate || Date.now()).toISOString(),
+            status: 'published',
+            scraped: false,
+            categories: item.categories || ['Noticias']
+          }, { onConflict: 'source_url' });
+          
+        if (error) console.error(`Supabase Upsert Error (${site.name}):`, error.message);
       }
     } catch (error) {
-      console.error(`Error fetching news from ${site.name}:`, error);
+      console.error(`Error fetching news from ${site.name}:`, error.message);
     }
   }
+}
 
-  // 3. Ordenar, limitar y guardar
-  if (newArticlesFetched > 0) {
-    // Ordenar de más reciente a más antigua
-    allArticles.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+export async function scrapeFullArticle(url) {
+  try {
+    // 1. Eliminar el proxy, hacer fetch directo desde el servidor NodeJS
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+      }
+    });
     
-    // Limitar a las últimas 500 para no reventar el servidor
-    allArticles = allArticles.slice(0, 500);
+    if (!res.ok) return null;
+    const htmlString = await res.text();
+    const $ = cheerio.load(htmlString);
+    
+    // 2. Selectores Específicos por Dominio
+    let $article = null;
+    if (url.includes('misionesonline.net')) $article = $('.entry-content').first();
+    else if (url.includes('elterritorio.com.ar')) $article = $('.nota-cuerpo').first();
+    else if (url.includes('diariodelaciudad.com.ar')) $article = $('.td-post-content, .entry-content').first();
+    else if (url.includes('misionescuatro.com')) $article = $('.entry-content').first();
+    else if (url.includes('primeraedicion.com.ar')) $article = $('.entry-content').first();
+    else $article = $('article, .entry-content, .nota-cuerpo, .content, main').first(); // Fallback
+    
+    if (!$article || !$article.length) return null;
 
-    // Asegurar que la carpeta data exista
-    try { await fs.mkdir(dataDir, { recursive: true }); } catch (e) {}
-
-    // Guardar en disco
-    await fs.writeFile(filePath, JSON.stringify(allArticles, null, 2), 'utf-8');
-    console.log(`Se agregaron ${newArticlesFetched} noticias nuevas. Total guardadas: ${allArticles.length}`);
+    // 3. Limpieza Avanzada (Embeds Sociales, Ads, Scripts, Recomendaciones)
+    const selectorsToRemove = [
+      'blockquote.twitter-tweet', 'iframe[src*="twitter.com"]', 'iframe[src*="x.com"]',
+      'blockquote.instagram-media', 'iframe[src*="instagram.com"]',
+      'blockquote.tiktok-embed', 'iframe[src*="tiktok.com"]',
+      'div.fb-post', 'iframe[src*="facebook.com"]',
+      'script', 'style', 'noscript', 'iframe', 'object', 'embed',
+      '.ad-container', '.banner', '.td-a-rec', '.apester-media'
+    ];
+    
+    $article.find(selectorsToRemove.join(', ')).remove();
+    
+    // Remover párrafos de "Leé también"
+    $article.find('p, div, h2, h3, h4').each((i, el) => {
+      const text = $(el).text().toLowerCase();
+      if (text.includes('leé también') || text.includes('lee también') || 
+          text.includes('te puede interesar') || text.includes('quizás te interese') ||
+          text.includes('lee mas:')) {
+        $(el).remove();
+      }
+    });
+    
+    // Extraemos el texto limpio
+    const articleBody = $article.text().trim();
+    
+    return articleBody || null;
+  } catch (error) {
+    return null;
   }
+}
 
-  return allArticles;
+export async function updateArticleInCache(id, newContent, newImage, editedContent = null, editedTitle = null) {
+  // Ahora actualiza directamente en Supabase (Lazy Scrape Client-Side Callback)
+  const updateData = { 
+    content: newContent, 
+    scraped: true
+  };
+
+  if (newImage) updateData.image = newImage;
+  if (editedContent) updateData.edited_content = editedContent;
+  if (editedTitle) updateData.edited_title = editedTitle;
+
+  const { error } = await supabase
+    .from('articles')
+    .update(updateData)
+    .eq('id', id); // o eq('source_url', id) si el ID que pasamos es diferente
+
+  if (error) console.error(`Error updating scraped article ${id}:`, error);
 }
 
 export function stripHtml(html) {
   if (!html) return '';
   return html.replace(/<[^>]*>?/gm, '');
-}
-
-// NUEVA FUNCIÓN: Guarda el artículo en la base de datos local en tiempo real
-export async function updateArticleInCache(id, newContent, newImage) {
-  const dataDir = path.join(process.cwd(), 'data');
-  const filePath = path.join(dataDir, 'news.json');
-  
-  try {
-    const fileData = await fs.readFile(filePath, 'utf-8');
-    let articles = JSON.parse(fileData);
-    
-    let updated = false;
-    for (let i = 0; i < articles.length; i++) {
-      if (articles[i].id === id) {
-        if (newContent) articles[i].fullContent = newContent;
-        if (newImage && !articles[i].image) articles[i].image = newImage;
-        articles[i].scraped = true; // Marcamos para no volver a scrapear
-        updated = true;
-        break;
-      }
-    }
-    
-    if (updated) {
-      await fs.writeFile(filePath, JSON.stringify(articles, null, 2), 'utf-8');
-      console.log(`Artículo ${id} actualizado en caché local (Lazy Scraped).`);
-    }
-  } catch (err) {
-    console.error('Error actualizando caché:', err);
-  }
 }
 
 export function getTrendingTopics(news, count = 5) {
@@ -243,10 +216,7 @@ export function getTrendingTopics(news, count = 5) {
     });
   });
 
-  return Object.keys(words)
-    .sort((a, b) => words[b] - words[a])
-    .slice(0, count)
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1));
+  return Object.keys(words).sort((a, b) => words[b] - words[a]).slice(0, count).map(w => w.charAt(0).toUpperCase() + w.slice(1));
 }
 
 export function getTopCategories(news, count = 6) {
@@ -262,8 +232,5 @@ export function getTopCategories(news, count = 6) {
     }
   });
   
-  return Object.keys(catCount)
-    .sort((a, b) => catCount[b] - catCount[a])
-    .slice(0, count)
-    .map(c => c.charAt(0).toUpperCase() + c.slice(1));
+  return Object.keys(catCount).sort((a, b) => catCount[b] - catCount[a]).slice(0, count).map(c => c.charAt(0).toUpperCase() + c.slice(1));
 }
