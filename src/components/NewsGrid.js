@@ -21,11 +21,18 @@ export default function NewsGrid({ news }) {
   return (
     <div>
       <div className="news-grid">
-        {visibleNews.map((item, idx) => (
+        {visibleNews.map((item, idx) => {
+          const isImage = item.image && !item.image.match(/\.(mp3|mp4|wav|avi)$/i);
+          return (
           <article key={item.id || idx} className="grid-article article-card animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {item.image && (
-              <Link href={`/article/${item.id}`} className="relative block w-full aspect-[16/9]">
-                <Image src={item.image} alt={item.title} fill className="object-cover" />
+            {isImage && (
+              <Link href={`/article/${item.id}`} className="relative block w-full aspect-[16/9] group">
+                <Image src={item.image} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                {item.categories && item.categories.length > 0 && (
+                  <span className="absolute top-3 left-3 bg-[var(--primary)] text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-md z-10">
+                    {item.categories[0]}
+                  </span>
+                )}
               </Link>
             )}
             <div className="secondary-content p-4">
@@ -39,7 +46,8 @@ export default function NewsGrid({ news }) {
               </div>
             </div>
           </article>
-        ))}
+          );
+        })}
       </div>
       
       {visibleCount < news.length && (

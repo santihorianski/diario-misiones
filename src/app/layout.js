@@ -22,6 +22,7 @@ import Footer from '@/components/Footer';
 import AdBanner from '@/components/AdBanner';
 import TemasDeHoy from '@/components/TemasDeHoy';
 import ThemeProvider from '@/components/ThemeProvider';
+import HeaderSearch from '@/components/HeaderSearch';
 
 export const metadata = {
   title: "Misiones Ya",
@@ -44,6 +45,13 @@ export const metadata = {
   manifest: '/manifest.json',
 };
 
+export const viewport = {
+  themeColor: '#E5232A',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export default function RootLayout({ children }) {
   return (
     <ClerkProvider>
@@ -53,9 +61,23 @@ export default function RootLayout({ children }) {
             <div className="bg-gray-100 dark:bg-gray-900 hidden md:block">
               <AdBanner type="horizontal" />
             </div>
-            <TemasDeHoy />
+            {/* Línea de Acento Rojo (Brand Line) */}
+            <div className="w-full h-[4px] bg-[var(--primary)]"></div>
+            
+            {/* Nivel 1: Top Bar Fina */}
+            <div className="bg-[var(--card-bg)] text-[var(--text-muted)] text-[12px] border-b border-[var(--border-color)]">
+              <div className="container mx-auto max-w-[1250px] px-6 flex flex-col md:flex-row md:items-center justify-between">
+                <TemasDeHoy />
+                <DolarHoyWidgets />
+              </div>
+            </div>
+            
+            {/* Nivel 2: Área de Marca (Logo gigante) */}
+            <HeaderSearch />
+            
+            {/* Nivel 3: Navegación de Categorías (Sticky) */}
             <Navbar />
-            <DolarHoyWidgets />
+            
             {children}
             <Footer />
           </ThemeProvider>

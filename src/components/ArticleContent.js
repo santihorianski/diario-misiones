@@ -42,12 +42,35 @@ export default function ArticleContent({ initialArticle }) {
     );
   }
 
+  useEffect(() => {
+    // Mover el botón de escuchar noticia debajo de las fotos (antes del primer párrafo)
+    if (!isLoading && content) {
+      const timer = setTimeout(() => {
+        const contentDiv = document.querySelector('.article-content');
+        const audioContainer = document.querySelector('#audio-player-wrapper');
+        
+        if (contentDiv && audioContainer) {
+          const firstP = contentDiv.querySelector('p, h2, h3, h4');
+          if (firstP) {
+            contentDiv.insertBefore(audioContainer, firstP);
+          }
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, content]);
+
+  // Limpiar imágenes duplicadas del contenido HTML (porque ya mostramos la imagen principal arriba)
+  const cleanContent = content ? content.replace(/<img[^>]*>/gi, '').replace(/<figure[^>]*>[\s\S]*?<\/figure>/gi, '') : '';
+
   return (
     <>
-      <AudioPlayer title={initialArticle.title} contentHtml={content} />
+      <div id="audio-player-wrapper">
+        <AudioPlayer title={initialArticle.title} contentHtml={cleanContent} />
+      </div>
       <div 
         className="article-content"
-        dangerouslySetInnerHTML={{ __html: content }}
+        dangerouslySetInnerHTML={{ __html: cleanContent }}
       />
     </>
   );

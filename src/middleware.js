@@ -1,5 +1,23 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
+if (typeof globalThis.MessagePort === 'undefined') {
+  globalThis.MessagePort = class MessagePort {};
+}
+if (typeof globalThis.MessageChannel === 'undefined') {
+  globalThis.MessageChannel = class MessageChannel {
+    constructor() {
+      this.port1 = new globalThis.MessagePort();
+      this.port2 = new globalThis.MessagePort();
+    }
+  };
+}
+if (typeof globalThis.FinalizationRegistry === 'undefined') {
+  globalThis.FinalizationRegistry = class FinalizationRegistry {
+    register() {}
+    unregister() {}
+  };
+}
+
 const isProtectedRoute = createRouteMatcher(['/admin(.*)']);
 
 export default clerkMiddleware(async (auth, req) => {

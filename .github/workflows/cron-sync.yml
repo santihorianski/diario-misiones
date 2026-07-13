@@ -1,0 +1,17 @@
+name: Cron Sync News
+
+on:
+  schedule:
+    # Se ejecuta cada 15 minutos
+    - cron: '*/15 * * * *'
+  workflow_dispatch: # Permite ejecutarlo manualmente desde GitHub
+
+jobs:
+  sync_news:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Sync API
+        run: |
+          curl -X POST https://misionesya-news.horianskiseguros.workers.dev/api/sync \
+            -H "Content-Type: application/json" \
+            -d '{}'

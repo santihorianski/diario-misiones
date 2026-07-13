@@ -52,11 +52,14 @@ export default function AudioPlayer({ title, contentHtml }) {
   if (!isSupported) return null;
 
   return (
-    <div className="audio-player-container my-4">
+    <div className="audio-player-container mb-6 mt-2">
       <button 
         onClick={togglePlay}
-        className="flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full font-semibold transition-colors hover:bg-indigo-100 dark:hover:bg-indigo-900/50"
-        style={{ border: '1px solid var(--primary)' }}
+        className={`flex items-center gap-2 px-6 py-3 rounded-full font-black text-[15px] transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 ${
+          isPlaying 
+            ? 'bg-gray-800 text-white hover:bg-gray-700' 
+            : 'bg-[#E5232A] text-white hover:bg-[#c71e24]'
+        }`}
       >
         {isPlaying ? (
           <>

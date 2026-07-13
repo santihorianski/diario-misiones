@@ -1,55 +1,44 @@
 'use client';
 import Link from 'next/link';
 import { useState } from 'react';
-import { Menu, Bell, User, X, Search } from 'lucide-react';
-import { UserButton, useAuth } from '@clerk/nextjs';
-import ThemeToggle from '@/components/ThemeToggle';
+import { Menu, X, Search } from 'lucide-react';
 
 export default function Navbar() {
-  const { userId } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <div className="w-full">
-      {/* Main Header Azul Marino */}
-      <header className="bg-[#000518] text-white">
-        <div className="container mx-auto max-w-[1250px] px-6 h-[85px] flex items-center justify-between relative">
+    <div className="w-full sticky top-0 z-50">
+      {/* Main Navigation - Estilo Diario Moderno (Glassmorphism) */}
+      <header className="bg-[var(--background)]/90 backdrop-blur-md border-t border-b border-[var(--border-color)] transition-all shadow-sm">
+        <div className="container mx-auto max-w-[1250px] px-6 h-[56px] flex items-center justify-between relative">
           
-          {/* Izquierda: Hamburguesa, Lupa y Secciones */}
-          <div className="flex items-center gap-5 z-10">
-            <button onClick={() => setIsMenuOpen(true)} className="flex items-center gap-1.5 hover:text-gray-300 transition-colors">
+          {/* Izquierda: Hamburguesa y Secciones */}
+          <div className="flex items-center gap-5 z-10 h-full">
+            <button onClick={() => setIsMenuOpen(true)} className="flex items-center gap-1.5 text-[var(--foreground)] hover:text-red-600 transition-colors h-full">
               <Menu size={22} strokeWidth={2.5} />
-              <Search size={20} strokeWidth={2.5} className="ml-1" />
-              <span className="hidden md:block font-bold text-[15px] ml-1">Secciones</span>
+              <span className="hidden md:block font-bold text-[14px] ml-1 uppercase tracking-wider">Secciones</span>
             </button>
-            <div className="hidden lg:flex items-center gap-5 font-bold text-[14px] ml-2 tracking-wide">
-              <Link href="/" className="hover:text-gray-300">Últimas noticias</Link>
-              <Link href="/categoria/deportes" className="hover:text-gray-300">Deportivo</Link>
-              <Link href="/categoria/espectaculos" className="hover:text-gray-300">Show</Link>
+            <div className="hidden lg:flex items-center gap-6 font-bold text-[13.5px] uppercase ml-6 tracking-wide h-full">
+              <Link href="/" className="flex items-center h-full text-[var(--foreground)] hover:text-red-600 transition-colors">Últimas noticias</Link>
+              <Link href="/categoria/politica" className="flex items-center h-full text-[var(--foreground)] hover:text-red-600 transition-colors">Política</Link>
+              <Link href="/categoria/economia" className="flex items-center h-full text-[var(--foreground)] hover:text-red-600 transition-colors">Economía</Link>
+              <Link href="/categoria/deportes" className="flex items-center h-full text-[var(--foreground)] hover:text-red-600 transition-colors">Deportes</Link>
             </div>
           </div>
 
-          {/* Centro: Logo absoluto (gigante) */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-0 mt-1">
-            <Link href="/" className="text-5xl md:text-[60px] font-black tracking-tighter text-blue-500 italic flex items-center drop-shadow-lg hover:scale-[1.02] transition-transform duration-300">
-              <span className="text-white">MISIONES</span><span className="text-[#E5232A]">YA</span>
+          {/* Logo en Móvil (solo visible en pantallas pequeñas) */}
+          <div className="md:hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <Link href="/" className="text-3xl font-black tracking-tighter italic flex items-center leading-none">
+              <span className="text-[var(--foreground)] drop-shadow-sm">MISIONES</span>
+              <span className="text-[#E5232A] drop-shadow-sm ml-1">YA</span>
             </Link>
           </div>
 
-          {/* Derecha: Notificaciones, Tema e Ingreso */}
-          <div className="flex items-center gap-4 z-10">
-            <button className="hover:text-gray-300 transition-colors hidden md:block">
-              <Bell size={20} />
-            </button>
-            <ThemeToggle />
-            {!userId ? (
-              <Link href="/admin" className="hidden md:flex items-center gap-2 text-sm font-bold hover:text-gray-300 transition-colors">
-                <User size={18} />
-                Ingresar
-              </Link>
-            ) : (
-              <UserButton afterSignOutUrl="/" />
-            )}
+          {/* Derecha: Lupa Móvil */}
+          <div className="flex items-center gap-4 z-10 text-[var(--foreground)]">
+            <Link href="/buscar" className="md:hidden hover:text-red-600 transition-colors p-2">
+              <Search size={22} strokeWidth={2.5} />
+            </Link>
           </div>
         </div>
       </header>

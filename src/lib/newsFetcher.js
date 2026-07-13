@@ -202,19 +202,33 @@ export function stripHtml(html) {
 
 export function getTrendingTopics(news, count = 5) {
   const words = {};
-  const stopWords = ['el', 'la', 'los', 'las', 'un', 'una', 'y', 'o', 'de', 'del', 'que', 'en', 'a', 'con', 'por', 'para', 'se', 'su', 'al', 'lo', 'como', 'más', 'pero', 'sus', 'le', 'es', 'este', 'esta', 'estos', 'estas', 'sobre', 'desde', 'hasta', 'entre'];
+  const stopWords = [
+    'el', 'la', 'los', 'las', 'un', 'una', 'y', 'o', 'de', 'del', 'que', 'en', 'a', 'con', 'por', 'para', 'se', 'su', 'al', 'lo', 
+    'como', 'más', 'pero', 'sus', 'le', 'es', 'este', 'esta', 'estos', 'estas', 'sobre', 'desde', 'hasta', 'entre', 'fueron', 
+    'están', 'tiene', 'tienen', 'hacer', 'según', 'quien', 'quienes', 'donde', 'cuando', 'habrá', 'había', 'tras', 'ante', 
+    'bajo', 'cabe', 'hacia', 'sin', 'está', 'será', 'toda', 'todo', 'todos', 'todas', 'gran', 'parte', 'nuevo', 'nueva'
+  ];
   
   news.forEach(article => {
     if (!article.title) return;
-    const titleWords = article.title.toLowerCase().split(/[\s,.:;"'?!()\-]+/);
+    
+    // Primero, limpiar posibles entidades HTML del título (ej: &#124; o &quot;)
+    let cleanTitle = article.title.replace(/&[#a-z0-9]+;/gi, ' ');
+    
+    const titleWords = cleanTitle.toLowerCase().split(/[\s,.:;"'?!()\-]+/);
     titleWords.forEach(word => {
-      if (word.length > 4 && !stopWords.includes(word)) {
+      // Filtrar estricamente para que solo contenga letras (incluye acentos españoles) y descartar números/símbolos
+      const isAlphabetic = /^[a-záéíóúüñ]+$/.test(word);
+      if (word.length > 4 && isAlphabetic && !stopWords.includes(word)) {
         words[word] = (words[word] || 0) + 1;
       }
     });
   });
 
-  return Object.keys(words).sort((a, b) => words[b] - words[a]).slice(0, count).map(w => w.charAt(0).toUpperCase() + w.slice(1));
+  return Object.keys(words)
+    .sort((a, b) => words[b] - words[a])
+    .slice(0, count)
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1));
 }
 
 export function getTopCategories(news, count = 6) {

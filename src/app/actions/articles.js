@@ -58,12 +58,29 @@ export async function getPublishedArticles() {
   return mapSupabaseArticles(data);
 }
 
+// Función auxiliar para decodificar entidades HTML (ej. &#124; => |)
+function decodeHTMLEntities(text) {
+  if (!text) return text;
+  const map = {
+    '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#039;': "'", '&apos;': "'", '&nbsp;': ' ',
+    '&iexcl;': '¡', '&iquest;': '¿', '&ntilde;': 'ñ', '&Ntilde;': 'Ñ'
+  };
+  return text.replace(/&[#\w]+;/g, match => {
+    if (map[match]) return map[match];
+    if (match.startsWith('&#')) {
+      const nums = match.match(/\d+/);
+      if (nums) return String.fromCharCode(parseInt(nums[0], 10));
+    }
+    return match;
+  });
+}
+
 // Función auxiliar para adaptar el modelo de la DB al Frontend
 function mapSupabaseArticles(data) {
   return data.map(item => ({
     id: item.id.toString(),
     source: item.source,
-    title: item.edited_title || item.title,
+    title: decodeHTMLEntities(item.edited_title || item.title),
     link: item.source_url,
     pubDate: item.published_at,
     contentSnippet: item.edited_content 

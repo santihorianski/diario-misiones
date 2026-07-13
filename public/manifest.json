@@ -1,11 +1,11 @@
 {
   "name": "Misiones Ya",
   "short_name": "Misiones Ya",
-  "description": "Las últimas noticias de Misiones, al instante.",
+  "description": "Plataforma de noticias de mayor crecimiento en la región.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#000518",
+  "theme_color": "#E5232A",
   "icons": [
     {
       "src": "/favicon.ico",

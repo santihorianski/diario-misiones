@@ -4,7 +4,7 @@ import NewsGrid from '@/components/NewsGrid';
 import AdBanner from '@/components/AdBanner';
 import TNHeroGrid from '@/components/TNHeroGrid';
 import NewsTicker from '@/components/NewsTicker';
-import { Menu, Search } from 'lucide-react';
+import NewsStories from '@/components/NewsStories';
 
 export const revalidate = 900; 
 
@@ -36,11 +36,14 @@ export default async function Home() {
   const gridNews = lightNews.filter(n => !carouselIds.has(n.id));
 
   return (
-    <main className="bg-white">
+    <main className="bg-[var(--background)]">
       {/* Ticker Dinámico Última Hora */}
       <NewsTicker news={lightNews.slice(0, 10)} />
 
-      <div className="w-full max-w-[1600px] mx-auto px-2 sm:px-4 mt-4">
+      {/* Historias estilo Instagram */}
+      <NewsStories articles={lightNews.slice(0, 8)} />
+
+      <div className="w-full max-w-[1600px] mx-auto px-2 sm:px-4 mt-2">
         {/* Carrusel Dinámico (Hero 4 columnas Full-Width) */}
         <TNHeroGrid articles={carouselNews} />
       </div>
@@ -59,20 +62,21 @@ export default async function Home() {
           <aside className="secondary-sidebar">
             <AdBanner type="sidebar" />
 
-            {/* Lo más leído */}
-            <div className="bg-white border border-gray-100 shadow-sm p-6 mt-8 rounded-lg">
-              <h3 className="border-b-[3px] border-[#000518] pb-2 mb-5 font-black uppercase text-gray-900 tracking-tight text-xl">Lo más leído</h3>
+            {/* Lo más leído (ahora arriba del CTA) */}
+            <div className="bg-[var(--card-bg)] border border-[var(--border-color)] shadow-sm p-6 mb-8 mt-4 rounded-lg">
+              <h3 className="border-b-[3px] border-[var(--primary)] pb-2 mb-5 font-black uppercase text-[var(--foreground)] tracking-tight text-xl">Lo más leído</h3>
               <ol className="flex flex-col gap-5">
                 {lightNews.slice(5, 10).map((item, idx) => (
-                  <li key={item.id} className="flex gap-4 items-start border-b border-gray-100 pb-5 last:border-0 last:pb-0 group">
-                    <span className="text-4xl font-black text-[#E5232A] leading-none mt-1">{idx + 1}.</span>
+                  <li key={item.id} className="flex gap-4 items-start border-b border-[var(--border-color)] pb-5 last:border-0 last:pb-0 group">
+                    <span className="text-4xl font-black text-[var(--primary)] leading-none mt-1">{idx + 1}.</span>
                     <Link href={`/article/${item.id}`} className="flex-1">
-                      <h4 className="text-gray-900 text-[15px] font-bold group-hover:text-[#E5232A] transition-colors leading-snug">{item.title}</h4>
+                      <h4 className="text-[var(--foreground)] text-[15px] font-bold group-hover:text-[var(--primary)] transition-colors leading-snug">{item.title}</h4>
                     </Link>
                   </li>
                 ))}
               </ol>
             </div>
+            
           </aside>
 
         </div>
