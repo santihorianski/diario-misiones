@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import AudioPlayer from './AudioPlayer';
 
 export default function ArticleContent({ initialArticle }) {
   const [content, setContent] = useState(initialArticle.fullContent);
@@ -42,9 +43,12 @@ export default function ArticleContent({ initialArticle }) {
   }
 
   return (
-    <div 
-      className="article-content"
-      dangerouslySetInnerHTML={{ __html: content }}
-    />
+    <>
+      <AudioPlayer title={initialArticle.title} contentHtml={content} />
+      <div 
+        className="article-content"
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
+    </>
   );
 }

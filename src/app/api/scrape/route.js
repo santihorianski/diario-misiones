@@ -18,6 +18,7 @@ export async function POST(req) {
 
     let editedContent = null;
     let editedTitle = null;
+    let editedCategory = null;
 
     if (process.env.GEMINI_API_KEY) {
       try {
@@ -30,7 +31,8 @@ Requisitos:
 - Usa un tono periodístico, serio y objetivo.
 - Formatea el resultado en HTML (usa etiquetas <p>, <strong>, y <h2> si es necesario). No incluyas bloques de código, solo el contenido.
 - Escribe también un nuevo titular impactante y original para la noticia.
-- Devuelve la respuesta en formato JSON estrictamente: {"title": "Nuevo Titular", "content": "<p>Contenido reescrito...</p>"}
+- Analiza la noticia y asígnale UNA sola categoría principal (Ej: Política, Policiales, Deportes, Economía, Sociedad, Internacionales, Espectáculos).
+- Devuelve la respuesta en formato JSON estrictamente: {"title": "Nuevo Titular", "content": "<p>Contenido reescrito...</p>", "category": "Política"}
 
 Texto original:
 ${scrapedText.substring(0, 4000)}`;
@@ -43,20 +45,22 @@ ${scrapedText.substring(0, 4000)}`;
           const parsed = JSON.parse(jsonMatch[0]);
           editedTitle = parsed.title;
           editedContent = parsed.content;
+          if (parsed.category) editedCategory = parsed.category;
         }
       } catch (geminiError) {
         console.error("Error al reescribir con Gemini:", geminiError);
       }
     }
 
-    await updateArticleInCache(id, scrapedText, newImage, editedContent, editedTitle);
+    await updateArticleInCache(id, scrapedText, newImage, editedContent, editedTitle, editedCategory);
 
     return NextResponse.json({ 
       success: true, 
       content: scrapedText, 
       image: newImage,
       edited_content: editedContent,
-      edited_title: editedTitle
+      edited_title: editedTitle,
+      category: editedCategory
     });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

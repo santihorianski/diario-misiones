@@ -178,7 +178,7 @@ export async function scrapeFullArticle(url) {
   }
 }
 
-export async function updateArticleInCache(id, newContent, newImage, editedContent = null, editedTitle = null) {
+export async function updateArticleInCache(id, newContent, newImage, editedContent = null, editedTitle = null, editedCategory = null) {
   // Ahora actualiza directamente en Supabase (Lazy Scrape Client-Side Callback)
   const updateData = { 
     content: newContent, 
@@ -188,6 +188,7 @@ export async function updateArticleInCache(id, newContent, newImage, editedConte
   if (newImage) updateData.image = newImage;
   if (editedContent) updateData.edited_content = editedContent;
   if (editedTitle) updateData.edited_title = editedTitle;
+  if (editedCategory) updateData.categories = [editedCategory];
 
   const { error } = await supabase
     .from('articles')
