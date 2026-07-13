@@ -24,20 +24,20 @@ import TemasDeHoy from '@/components/TemasDeHoy';
 import ThemeProvider from '@/components/ThemeProvider';
 
 export const metadata = {
-  title: "MisionesYa",
+  title: "Misiones Ya",
   description: "Las últimas noticias de Misiones, al instante.",
   openGraph: {
-    title: "MisionesYa | El portal de noticias",
+    title: "Misiones Ya | El portal de noticias",
     description: "Las últimas noticias de Misiones, al instante.",
     url: "https://misionesya.com",
-    siteName: "MisionesYa",
+    siteName: "Misiones Ya",
     images: [{ url: "https://placehold.co/1200x630/000b29/FFF?text=MISIONES+YA" }],
     locale: "es_AR",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "MisionesYa",
+    title: "Misiones Ya",
     description: "Las últimas noticias de Misiones, al instante.",
     images: ["https://placehold.co/1200x630/000b29/FFF?text=MISIONES+YA"],
   },

@@ -1,6 +1,6 @@
 {
-  "name": "MisionesYa",
-  "short_name": "MisionesYa",
+  "name": "Misiones Ya",
+  "short_name": "Misiones Ya",
   "description": "Las últimas noticias de Misiones, al instante.",
   "start_url": "/",
   "display": "standalone",

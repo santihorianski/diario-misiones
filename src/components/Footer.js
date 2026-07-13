@@ -18,7 +18,7 @@ export default function Footer() {
         
         {/* Institucional */}
         <div className="footer-section">
-          <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', fontFamily: 'var(--font-serif)' }}>MisionesYa</h3>
+          <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', fontFamily: 'var(--font-serif)' }}>Misiones Ya</h3>
           <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: '1.6' }}>
             Tu portal de noticias con la mejor información de Misiones y la región. Mantente informado al instante con las últimas novedades, cotizaciones y más.
           </p>
@@ -41,7 +41,7 @@ export default function Footer() {
           <h4 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#e2e8f0', textTransform: 'uppercase', letterSpacing: '1px' }}>Contacto</h4>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#94a3b8', display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.95rem' }}>
             <li>📍 Posadas, Misiones, Argentina</li>
-            <li>📧 contacto@espectadormisiones.com</li>
+            <li>📧 contacto@misionesya.com</li>
             <li>📞 +54 376 15-555555</li>
             <li style={{ marginTop: '1rem' }}>
               <strong>Redes Sociales:</strong>
@@ -63,7 +63,7 @@ export default function Footer() {
         color: '#64748b',
         fontSize: '0.85rem'
       }}>
-        <p>&copy; {new Date().getFullYear()} MisionesYa. Todos los derechos reservados.</p>
+        <p>&copy; {new Date().getFullYear()} Misiones Ya. Todos los derechos reservados.</p>
       </div>
     </footer>
   );

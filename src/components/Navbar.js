@@ -66,7 +66,7 @@ export default function Navbar() {
           {/* Sidebar */}
           <div className="relative w-[320px] h-full bg-[#000518] text-white shadow-2xl flex flex-col animate-slide-in">
             <div className="flex items-center justify-between p-6 border-b border-white/10 bg-[#E5232A]">
-              <span className="font-black text-2xl italic tracking-tighter drop-shadow-md">MISIONESYA</span>
+              <span className="font-black text-2xl italic tracking-tighter drop-shadow-md">MISIONES YA</span>
               <button onClick={() => setIsMenuOpen(false)} className="hover:text-gray-200 bg-white/20 p-1 rounded-full transition-colors">
                 <X size={24} />
               </button>
