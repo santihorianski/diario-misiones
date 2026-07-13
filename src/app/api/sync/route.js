@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { fetchAllNews } from '@/lib/newsFetcher';
 
-export const runtime = 'edge';
-
 export async function POST() {
   try {
     // LLamamos a fetchAllNews, asumiendo que fuerza una lectura o al menos actualiza
