@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 import { getAdminNews } from '@/lib/cms';
 import EditarClient from './EditarClient';
 
@@ -21,3 +22,4 @@ export default async function EditarNoticiaPage({ params }) {
 
   return <EditarClient params={params} initialNews={article} />;
 }
+

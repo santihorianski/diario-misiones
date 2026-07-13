@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 import { SignIn } from '@clerk/nextjs';
 
 export default function SignInPage() {
@@ -35,3 +36,4 @@ export default function SignInPage() {
     </div>
   );
 }
+

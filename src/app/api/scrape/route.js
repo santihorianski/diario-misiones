@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 import { NextResponse } from 'next/server';
 import { scrapeFullArticle, updateArticleInCache } from '@/lib/newsFetcher';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -68,3 +69,4 @@ ${scrapedText.substring(0, 4000)}`;
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

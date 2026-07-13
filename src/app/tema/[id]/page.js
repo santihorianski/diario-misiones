@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 import { fetchAllNews, stripHtml } from '@/lib/newsFetcher';
 import Link from 'next/link';
 
@@ -55,3 +56,4 @@ export default async function TemaPage({ params }) {
     </main>
   );
 }
+
