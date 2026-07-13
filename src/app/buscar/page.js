@@ -1,4 +1,4 @@
-import { fetchAllNews, stripHtml } from '@/lib/fetchNews';
+import { fetchAllNews, stripHtml } from '@/lib/newsFetcher';
 import Link from 'next/link';
 
 export default async function BuscarPage({ searchParams }) {

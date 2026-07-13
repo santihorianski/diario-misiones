@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { fetchAllNews, getTrendingTopics } from '@/lib/fetchNews';
+import { fetchAllNews, getTrendingTopics } from '@/lib/newsFetcher';
 
 export default async function TemasDeHoy() {
   const news = await fetchAllNews();

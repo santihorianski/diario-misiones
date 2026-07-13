@@ -1,4 +1,4 @@
-﻿import { fetchAllNews } from '@/lib/fetchNews';
+import { fetchAllNews } from '@/lib/newsFetcher';
 
 export default async function sitemap() {
   const news = await fetchAllNews();

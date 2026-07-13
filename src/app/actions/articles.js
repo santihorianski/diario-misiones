@@ -2,7 +2,7 @@
 
 import { supabase } from '@/lib/supabaseClient';
 import { revalidatePath } from 'next/cache';
-import { stripHtml } from '@/lib/fetchNews'; // Para limpiar HTML si es necesario
+import { stripHtml } from '@/lib/newsFetcher'; // Para limpiar HTML si es necesario
 
 // 1. Obtener solo artículos pendientes para el admin
 export async function getPendingArticles() {

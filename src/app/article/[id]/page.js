@@ -1,4 +1,4 @@
-import { fetchAllNews } from '@/lib/fetchNews';
+import { fetchAllNews } from '@/lib/newsFetcher';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';

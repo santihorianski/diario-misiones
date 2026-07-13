@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { scrapeFullArticle, updateArticleInCache } from '@/lib/fetchNews';
+import { scrapeFullArticle, updateArticleInCache } from '@/lib/newsFetcher';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export async function POST(req) {

@@ -1,6 +1,6 @@
-import { fetchAllNews } from '@/lib/fetchNews';
+import { fetchAllNews } from '@/lib/newsFetcher';
 import Link from 'next/link';
-import { stripHtml } from '@/lib/fetchNews'; // Need to export stripHtml in fetchNews.js
+import { stripHtml } from '@/lib/newsFetcher'; // Need to export stripHtml in fetchNews.js
 
 export default async function CategoryPage({ params }) {
   const { id } = await params;
