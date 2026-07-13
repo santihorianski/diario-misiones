@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import { getAdminNews } from '@/lib/cms';
 import EditarClient from './EditarClient';
 

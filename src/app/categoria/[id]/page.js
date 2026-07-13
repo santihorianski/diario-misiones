@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import { fetchAllNews } from '@/lib/newsFetcher';
 import Link from 'next/link';
 import { stripHtml } from '@/lib/newsFetcher'; // Need to export stripHtml in fetchNews.js
