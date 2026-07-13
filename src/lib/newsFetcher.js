@@ -1,15 +1,5 @@
-import Parser from 'rss-parser';
 import * as cheerio from 'cheerio';
 import { supabase } from './supabaseClient';
-
-const parser = new Parser({
-  customFields: {
-    item: [
-      ['media:content', 'mediaContent'],
-      ['image', 'image']
-    ]
-  }
-});
 
 const FEED_URLS = [
   { name: 'Misiones Online', url: 'https://misionesonline.net/feed/' },
@@ -78,35 +68,47 @@ export async function syncRssFeeds() {
   for (const site of FEED_URLS) {
     try {
       const xmlString = await fetchAndFixRSS(site.url);
-      const feed = await parser.parseString(xmlString);
+      const $ = cheerio.load(xmlString, { xmlMode: true });
       
-      for (const item of feed.items) {
-        let imageUrl = item.enclosure ? item.enclosure.url : null;
-        if (!imageUrl && item.mediaContent && item.mediaContent.$ && item.mediaContent.$.url) {
-          imageUrl = item.mediaContent.$.url;
+      const items = $('item').toArray();
+      
+      for (const el of items) {
+        const item = $(el);
+        const title = item.children('title').text();
+        const link = item.children('link').text();
+        const pubDateStr = item.children('pubDate').text();
+        
+        let imageUrl = item.children('enclosure').attr('url') || null;
+        if (!imageUrl) {
+          imageUrl = item.children('media\\:content, content').attr('url') || null;
         }
 
-        let fullContent = item['content:encoded'] || item.content || item.description || '';
+        let fullContent = item.children('content\\:encoded').text() || item.children('description').text() || '';
         if (!imageUrl) {
           const imgMatch = fullContent.match(/<img[^>]+src=["']([^"']+)["']/i);
           if (imgMatch && imgMatch[1]) imageUrl = imgMatch[1];
         }
 
-        const snippet = item.contentSnippet || stripHtml(fullContent).substring(0, 200) + '...';
+        const snippet = stripHtml(fullContent).substring(0, 200) + '...';
+
+        const categories = [];
+        item.children('category').each((i, cat) => {
+           categories.push($(cat).text());
+        });
 
         const { error } = await supabase
           .from('articles')
           .upsert({
-            title: item.title,
+            title: title,
             content: fullContent,
             content_snippet: snippet,
-            source_url: item.link,
+            source_url: link,
             source: site.name,
             image: imageUrl,
-            published_at: new Date(item.pubDate || Date.now()).toISOString(),
+            published_at: new Date(pubDateStr || Date.now()).toISOString(),
             status: 'published',
             scraped: false,
-            categories: item.categories || ['Noticias']
+            categories: categories.length > 0 ? categories : ['Noticias']
           }, { onConflict: 'source_url' });
           
         if (error) console.error(`Supabase Upsert Error (${site.name}):`, error.message);
