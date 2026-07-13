@@ -14,7 +14,7 @@ export default async function sitemap() {
   ];
 
   const newsRoutes = news.map((article) => ({
-    url: ${baseUrl}/article/${article.id},
+    url: `${baseUrl}/article/${article.id}`,
     lastModified: new Date(article.pubDate),
     changeFrequency: 'daily',
     priority: 0.8,
