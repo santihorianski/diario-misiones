@@ -20,14 +20,9 @@ const FEED_URLS = [
 ];
 
 export async function fetchAllNews(forceSync = false) {
-  // Sincronizar RSS si se solicita (por ejemplo, desde el dashboard)
+  // Sincronizar RSS solo si se solicita explícitamente (por ejemplo, desde el dashboard o el Cron Job)
   if (forceSync) {
     await syncRssFeeds();
-  } else {
-    // Para evitar saturar las llamadas a la API en desarrollo o Vercel sin forceSync, 
-    // lo hacemos asíncronamente o confiamos en CRON / botón manual.
-    // syncRssFeeds() puede correr de fondo.
-    syncRssFeeds().catch(console.error);
   }
 
   // Obtener noticias desde Supabase
