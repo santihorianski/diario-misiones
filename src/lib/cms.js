@@ -1,8 +1,4 @@
 import { supabase } from './supabaseClient';
-import fs from 'fs/promises';
-import path from 'path';
-
-const getAdsPath = () => path.join(process.cwd(), 'data', 'ads.json');
 
 // Obtener todas las noticias (incluyendo ocultas) para el panel admin
 export async function getAdminNews() {
@@ -131,24 +127,13 @@ const DEFAULT_ADS = {
 };
 
 export const getAdsConfig = async () => {
-  try {
-    const fileContents = await fs.readFile(getAdsPath(), 'utf8');
-    return JSON.parse(fileContents);
-  } catch (error) {
-    return {
-      header: { active: false, type: 'image', imageUrl: '', link: '', script: '' },
-      sidebar: { active: false, type: 'image', imageUrl: '', link: '', script: '' },
-      inArticle: { active: false, type: 'image', imageUrl: '', link: '', script: '' }
-    };
-  }
+  // En Cloudflare Pages Edge no hay sistema de archivos (fs). 
+  // Para evitar errores en el build, devolvemos los defaults.
+  // TODO: Mover anuncios a Supabase.
+  return DEFAULT_ADS;
 };
 
 export async function updateAdsConfig(newConfig) {
-  try {
-    await fs.writeFile(getAdsPath(), JSON.stringify(newConfig, null, 2), 'utf-8');
-    return true;
-  } catch (err) {
-    console.error('Error updating ads:', err);
-    return false;
-  }
+  console.log("No se pueden guardar anuncios en archivos locales en Cloudflare Pages Edge.");
+  return false;
 }
