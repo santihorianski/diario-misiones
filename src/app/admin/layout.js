@@ -27,7 +27,7 @@ export default function AdminLayout({ children }) {
           <div className="h-16 flex items-center px-6 border-b border-neutral-800">
             <span className="text-sm font-semibold tracking-widest uppercase text-white flex items-center gap-2">
               <div className="w-2 h-2 bg-neutral-200 rounded-full"></div>
-              MisionesYa
+              Misiones Ya
             </span>
           </div>
 
@@ -74,7 +74,7 @@ export default function AdminLayout({ children }) {
         <main className="flex-1 overflow-y-auto bg-black relative">
           {/* Header móvil */}
           <header className="md:hidden h-14 border-b border-neutral-800 bg-[#0a0a0a] flex items-center justify-between px-4 sticky top-0 z-20">
-            <span className="text-xs font-bold tracking-widest uppercase text-white">MisionesYa Admin</span>
+            <span className="text-xs font-bold tracking-widest uppercase text-white">Misiones Ya Admin</span>
             <Show when="signed-in">
               <UserButton />
             </Show>

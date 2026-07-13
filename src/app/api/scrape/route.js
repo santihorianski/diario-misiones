@@ -26,7 +26,7 @@ export async function POST(req) {
       try {
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-        const prompt = `Eres un periodista profesional y redactor web para el diario digital MISIONESYA. 
+        const prompt = `Eres un periodista profesional y redactor web para el diario digital MISIONES YA. 
 Tu tarea es tomar el siguiente texto de una noticia (que fue extraída de otro medio) y reescribirla por completo para crear un artículo original y evitar el plagio.
 Requisitos:
 - Mantén los hechos estrictamente verídicos. No inventes datos.

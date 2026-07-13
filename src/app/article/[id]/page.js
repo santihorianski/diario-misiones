@@ -22,13 +22,13 @@ export async function generateMetadata({ params }) {
   if (!article) return { title: 'Noticia no encontrada' };
 
   return {
-    title: `${article.title} | MisionesYa`,
+    title: `${article.title} | Misiones Ya`,
     description: article.contentSnippet,
       openGraph: {
         title: article.title,
         description: article.contentSnippet,
         url: `https://misionesya-news.pages.dev/article/${article.id}`,
-        siteName: 'MisionesYa',
+        siteName: 'Misiones Ya',
         images: [
           {
             url: article.image || 'https://misionesya-news.pages.dev/default-share.jpg',
@@ -58,7 +58,7 @@ export async function generateMetadata({ params }) {
         <ReadingProgress />
         <main className="article-page">
           <header className="header">
-            <h1 className="site-title">MisionesYa</h1>
+            <h1 className="site-title">Misiones Ya</h1>
           </header>
 
           <div className="container article-container">

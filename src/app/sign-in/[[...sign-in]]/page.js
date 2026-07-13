@@ -11,7 +11,7 @@ export default function SignInPage() {
       
       <div className="relative z-10 w-full max-w-md p-6 flex flex-col items-center">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-white mb-2">MisionesYa</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">Misiones Ya</h1>
           <p className="text-slate-400">Panel de Administración</p>
         </div>
         

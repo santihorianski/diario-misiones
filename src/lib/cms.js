@@ -24,7 +24,7 @@ export async function getAdminNews() {
       image: item.image,
       categories: item.categories || [],
       scraped: item.scraped,
-      isCustom: item.source === 'MisionesYa',
+      isCustom: item.source === 'Misiones Ya',
       isHidden: item.is_hidden,
       status: item.status,
       seoDescription: item.meta_description
@@ -82,7 +82,7 @@ export const createCustomArticle = async ({ title, fullContent, image, categorie
         title,
         content: fullContent,
         content_snippet: fullContent.replace(/<[^>]*>?/gm, '').substring(0, 150) + '...',
-        source: 'MisionesYa',
+        source: 'Misiones Ya',
         source_url: `https://misionesya.com/article/custom-${Date.now()}`,
         image,
         categories: categories || ['Destacado'],
