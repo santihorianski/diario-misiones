@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { scrapeFullArticle, updateArticleInCache } from '@/lib/newsFetcher';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-export const runtime = 'edge';
+
 
 export async function POST(req) {
   try {

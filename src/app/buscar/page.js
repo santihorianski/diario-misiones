@@ -1,4 +1,3 @@
-export const runtime = 'edge';
 import { fetchAllNews, stripHtml } from '@/lib/newsFetcher';
 import Link from 'next/link';
 
